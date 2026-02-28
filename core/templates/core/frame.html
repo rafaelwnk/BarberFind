@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+Frame
+{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg bg-danger">
+    <div class="container">
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar"
+            aria-labelledby="offcanvasNavbarLabel">
+            <div class="offcanvas-header">
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body d-flex flex-column justify-content-center align-items-center d-lg-block">
+                <ul class="navbar-nav w-100 text-center">
+                    <li class="nav-item">
+                        <a class="nav-link fs-5" href="{% url 'home' %}">Home</a>
+                        <hr class="w-50 mx-auto d-lg-none">
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fs-5" href="{% url 'search' %}">Pesquisar</a>
+                        <hr class="w-50 mx-auto d-lg-none">
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fs-5" href="{% url 'history' %}">Histórico</a>
+                        <hr class="w-50 mx-auto d-lg-none">
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+
+    {% block frame_content %}
+    {% endblock %}
+
+</div>
+
+{% endblock %}

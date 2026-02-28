@@ -1,0 +1,21 @@
+.login-card {
+  border-width: 2px;
+}
+
+@media (max-width: 370px) {
+  .login-card {
+    border-width: 1.5px;
+  }
+}
+
+@media (max-width: 340px) {
+  .login-card {
+    border-width: 1px;
+  }
+}
+
+@media (max-width: 320px) {
+  .login-card {
+    border-width: 0.5px;
+  }
+}

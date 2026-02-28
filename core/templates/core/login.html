@@ -1,0 +1,47 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-column justify-content-center align-items-center vh-100">
+    <div class="card border shadow-lg p-5 login-card mx-3">
+        <h1 class="mb-4 text-center">Login</h1>
+        <form>
+            <div class="input-group mb-4 mt-2">
+                <span class="input-group-text">
+                    <i class="bi bi-envelope"></i>
+                </span>
+                <div class="form-floating">
+                    <input type="text" class="form-control" placeholder="Email">
+                    <label>Email</label>
+                </div>
+            </div>
+
+            <div class="input-group mb-4">
+                <span class="input-group-text">
+                    <i class="bi bi-lock"></i>
+                </span>
+                <div class="form-floating">
+                    <input class="form-control" placeholder="Senha">
+                    <label>Senha</label>
+                    <button type="button"
+                        class="btn position-absolute top-50 end-0 translate-middle-y me-3 p-0 border-0" aria-label="Mostrar senha"> <i class="bi bi-eye-slash"></i> </button>
+                </div>
+            </div>
+
+            <button class="mt-4 btn btn-danger d-block mx-auto">
+                Entrar
+            </button>
+
+            <button class="mt-4 btn btn-secondary d-block mx-auto">
+                Cadastre-se
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
