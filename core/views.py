@@ -14,3 +14,6 @@ def search_view(request):
 
 def history_view(request):
     return render(request, 'core/history.html')
+
+def account_view(request):
+    return render(request, 'core/account.html')
