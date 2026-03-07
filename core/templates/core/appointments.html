@@ -1,0 +1,57 @@
+{% extends 'core/frame.html' %}
+
+{% block frame_content %}
+
+<div class="container">
+    <h1 class="mb-4 text-center">Agendamentos</h1>
+
+    <div class="row justify-content-center">
+
+        {% for appointment in appointments %}
+
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        {{ appointment.barber.user.username }}
+                    </h5>
+
+                    <h5 class="card-title">
+                        {{ appointment.customer.user.username }}
+                    </h5>
+
+                    <p class="card-text">
+                        <strong>Data:</strong> {{ appointment.date }}
+                    </p>
+
+                    <p class="card-text">
+                        <strong>Horário:</strong> {{ appointment.time }}
+                    </p>
+
+                    <p class="card-text">
+                        <strong>Serviços:</strong>
+                    </p>
+
+                    <ul>
+                        {% for service in appointment.services.all %}
+                        <li>{{ service.title }}</li>
+                        {% endfor %}
+                    </ul>
+
+                </div>
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <p class="text-center">Você ainda não possui agendamentos.</p>
+
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}

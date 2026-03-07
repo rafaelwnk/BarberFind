@@ -1,0 +1,64 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="d-flex flex-column justify-content-center align-items-center vh-100">
+    <div class="card border shadow-lg p-5 login-card mx-3">
+        <h1 class="mb-4 text-center">Login</h1>
+
+        {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="input-group mb-4 mt-2">
+                <span class="input-group-text">
+                    <i class="bi bi-envelope"></i>
+                </span>
+                <div class="form-floating">
+                    <input 
+                        type="text"
+                        name="username"
+                        class="form-control"
+                        placeholder="Username"
+                        required
+                    >
+                    <label>Username</label>
+                </div>
+            </div>
+
+            <div class="input-group mb-4">
+                <span class="input-group-text">
+                    <i class="bi bi-lock"></i>
+                </span>
+                <div class="form-floating">
+                    <input 
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        placeholder="Senha"
+                        required
+                    >
+                    <label>Senha</label>
+                </div>
+            </div>
+
+            <button type="submit" class="mt-4 btn btn-danger w-100">
+                Entrar
+            </button>
+
+        </form>
+
+        <a href="{% url 'register' %}" class="btn btn-secondary mt-3 w-100">
+            Cadastre-se
+        </a>
+
+    </div>
+</div>
+
+{% endblock %}

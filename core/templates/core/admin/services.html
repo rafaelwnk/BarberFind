@@ -1,0 +1,56 @@
+{% extends 'core/frame.html' %}
+
+{% block frame_content %}
+
+<div class="container">
+    <h1 class="mb-4 text-center">Serviços</h1>
+
+    <div class="d-flex align-items-center justify-content-between mb-4" style="max-width: 600px; margin: 0 auto;">
+        <form method="GET" action="{% url 'services' %}" class="flex-grow-1 me-3">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Buscar serviço...">
+                <button class="btn btn-danger" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </form>
+
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#createServiceModal">
+            <i class="bi bi-plus"></i>
+        </button>
+    </div>
+
+    <div class="row justify-content-center">
+
+        {% for service in services %}
+
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        {{ service.title }}
+                    </h5>
+
+                    <p> {{ service.price }}</p>
+
+                    <p> {{ service.duration }} min</p>
+
+                </div>
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <p class="text-center">Sem serviços cadastrados.</p>
+
+        {% endfor %}
+
+    </div>
+</div>
+
+{% include 'core/admin/create_service.html' %}
+
+{% endblock %}

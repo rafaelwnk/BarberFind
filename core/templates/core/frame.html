@@ -1,71 +1,98 @@
 {% extends 'core/base.html' %}
 
-{% block title %}
-Frame
-{% endblock %}
-
 {% block content %}
 
 <div class="d-flex vh-100">
     <nav class="d-flex flex-column flex-shrink-0 p-3 border-end border-danger" style="width: 280px;">
-    
+
         <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
             <i class="bi bi-browser-firefox fs-3 me-2"></i>
             <span class="fs-4">Barber Find</span>
         </a>
-    
+
         <hr>
-    
+
         <ul class="nav nav-pills flex-column mb-auto">
-            
+
+            {% if request.user.is_superuser %}
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link active bg-danger" aria-current="page">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'barbers' %}" class="nav-link text-white" aria-current="page">
+                    <i class="bi bi-scissors me-2"></i>
+                    Barbeiros
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'services' %}" class="nav-link text-white" aria-current="page">
+                    <i class="bi bi-card-checklist me-2"></i>
+                    Serviços
+                </a>
+            </li>
+            {% endif %}
+
+            {% if request.user.customer %}
             <li class="nav-item">
                 <a href="{% url 'home' %}" class="nav-link active bg-danger" aria-current="page">
                     <i class="bi bi-house me-2"></i>
                     Home
                 </a>
             </li>
-    
+
             <li class="nav-item">
                 <a href="{% url 'search' %}" class="nav-link text-white" aria-current="page">
                     <i class="bi bi-search me-2"></i>
                     Pesquisar
                 </a>
             </li>
-    
+            {% endif %}
+
+            {% if request.user.barber %}
             <li class="nav-item">
-                <a href="{% url 'history' %}" class="nav-link text-white" aria-current="page">
-                    <i class="bi bi-clock-history me-2"></i>
-                    Histórico
+                <a href="{% url 'home' %}" class="nav-link active bg-danger" aria-current="page">
+                    <i class="bi bi-house me-2"></i>
+                    Home
                 </a>
             </li>
-    
+            {% endif %}
+
+            <li class="nav-item">
+                <a href="{% url 'appointments' %}" class="nav-link text-white" aria-current="page">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Agendamentos
+                </a>
+            </li>
         </ul>
-    
+
         <hr>
-    
+
         <div class="dropdown">
-            <a href="#" 
-               class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-               data-bs-toggle="dropdown"
-               aria-expanded="false">
-    
-               <i class="bi bi-person-circle fs-3 mx-2"></i>
-    
-                <strong>mdo</strong>
+            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown" aria-expanded="false">
+
+                <i class="bi bi-person-circle fs-3 mx-2"></i>
+
+                <strong>{{ request.user.username }}</strong>
             </a>
-    
+
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
                 <li><a class="dropdown-item" href="{% url 'account' %}">Conta</a></li>
-                <li><a class="dropdown-item" href="#">Sair</a></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}">Sair</a></li>
             </ul>
         </div>
-    
+
     </nav>
-    
+
     <div class="container mt-4">
         {% block frame_content %}
         {% endblock %}
-    
+
     </div>
 </div>
 
