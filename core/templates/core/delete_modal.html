@@ -1,0 +1,30 @@
+{% if delete_data %}
+<div class="modal fade show d-block" id="deleteModal" tabindex="-1"
+    style="background:rgba(0,0,0,.5); animation: fadeIn .15s ease-in-out">
+    {% else %}
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        {% endif %}
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar exclusão</h5>
+                    <a href="{{ cancel_url }}" class="btn-close"></a>
+                </div>
+
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir <strong>{{ delete_data.name }}</strong>?</p>
+                </div>
+
+                <div class="modal-footer">
+                    <a href="{{ cancel_url }}" class="btn btn-secondary">Cancelar</a>
+                    <form method="POST" action="{{ delete_url }}">
+                        {% csrf_token %}
+                        <input type="hidden" name="{{ delete_id_field }}" value="{{ delete_data.id }}">
+                        <button class="btn btn-danger">Excluir</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>

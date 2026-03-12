@@ -35,7 +35,7 @@ class Service(models.Model):
         help_text="Duration in minutes"
     )
 
-    barbers = models.ManyToManyField(Barber)
+    barbers = models.ManyToManyField(Barber, blank=True)
 
     def __str__(self):
         return self.title

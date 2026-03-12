@@ -1,11 +1,35 @@
 {% extends 'core/frame.html' %}
-
 {% block frame_content %}
 <div class="d-flex flex-column justify-content-center align-items-center">
     <h1 class="mb-4 text-center">Conta</h1>
     <div class="card border shadow-lg p-5 mx-3">
-
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Nome</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Senha <small class="text-muted">(deixe em branco para manter)</small></label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <button class="btn btn-danger w-100">
+                Salvar
+            </button>
+        </form>
     </div>
 </div>
-
 {% endblock %}

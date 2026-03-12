@@ -1,0 +1,59 @@
+{% if service_data or open_modal %}
+<div class="modal fade show d-block" id="serviceModal" tabindex="-1" style="background:rgba(0,0,0,.5); animation: fadeIn .15s ease-in-out">
+{% else %}
+<div class="modal fade" id="serviceModal" tabindex="-1">
+{% endif %}
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {% if service_data %}Editar Serviço{% else %}Criar Serviço{% endif %}
+                </h5>
+                <a href="{% url 'services' %}" class="btn-close"></a>
+            </div>
+
+            <div class="modal-body">
+
+                <form method="POST" action="{% if service_data %}{% url 'edit_service' %}{% else %}{% url 'create_service' %}{% endif %}">
+                    {% csrf_token %}
+
+                    {% if service_data %}
+                        <input type="hidden" name="service_id" value="{{ service_data.id }}">
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Título</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Preço (R$)</label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                            <div class="text-danger small mt-1">{{ form.price.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Duração (minutos)</label>
+                        {{ form.duration }}
+                        {% if form.duration.errors %}
+                            <div class="text-danger small mt-1">{{ form.duration.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button class="btn btn-danger w-100">
+                        {% if service_data %}Salvar{% else %}Criar{% endif %}
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -12,15 +12,16 @@
         <div class="col-12 col-md-6 col-lg-4 mb-4">
 
             <div class="card shadow-sm h-100">
-                <div class="card-body">
-
-                    <h5 class="card-title">
-                        {{ appointment.barber.user.username }}
-                    </h5>
-
+                <div class="card-header">
                     <h5 class="card-title">
                         {{ appointment.customer.user.username }}
                     </h5>
+                </div>
+                <div class="card-body">
+
+                    <p class="card-text">
+                        <strong>Barbeiro:</strong> {{ appointment.barber.user.username }}
+                    </p>
 
                     <p class="card-text">
                         <strong>Data:</strong> {{ appointment.date }}

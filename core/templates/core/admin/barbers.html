@@ -15,7 +15,7 @@
             </div>
         </form>
 
-        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#createBarberModal">
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#barberModal">
             <i class="bi bi-plus"></i>
         </button>
     </div>
@@ -27,12 +27,22 @@
         <div class="col-12 col-md-6 col-lg-4 mb-4">
 
             <div class="card shadow-sm h-100">
-                <div class="card-body">
-
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title">
                         {{ barber.user.username }}
                     </h5>
-
+                    <div>
+                        <a href="{% url 'barbers' %}?edit={{ barber.id }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'barbers' %}?delete={{ barber.id }}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>{{ barber.user.email }}</p>
+                    <p><a href="">Serviços</a></p>
                 </div>
             </div>
 
@@ -47,6 +57,7 @@
     </div>
 </div>
 
-{% include 'core/admin/create_barber.html' %}
+{% include 'core/admin/barber_modal.html' %}
+{% include 'core/delete_modal.html' with cancel_url=request.path delete_url='/barbers/delete/' delete_id_field='barber_id' %}
 
 {% endblock %}

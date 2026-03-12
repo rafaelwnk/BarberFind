@@ -1,0 +1,64 @@
+{% if user_data or open_modal %}
+<div class="modal fade show d-block" id="barberModal" tabindex="-1" style="background:rgba(0,0,0,.5)">
+{% else %}
+<div class="modal fade" id="barberModal" tabindex="-1">
+{% endif %}
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {% if user_data %}Editar Barbeiro{% else %}Criar Barbeiro{% endif %}
+                </h5>
+                <a href="{% url 'barbers' %}" class="btn-close"></a>
+            </div>
+
+            <div class="modal-body">
+
+                <form method="POST" action="{% if user_data %}{% url 'edit_barber' %}{% else %}{% url 'create_barber' %}{% endif %}">
+                    {% csrf_token %}
+
+                    {% if user_data %}
+                        <input type="hidden" name="barber_id" value="{{ user_data.id }}">
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Nome</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Senha
+                            {% if user_data %}
+                                <small class="text-muted">(deixe em branco para manter)</small>
+                            {% endif %}
+                        </label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button class="btn btn-danger w-100">
+                        {% if user_data %}Salvar{% else %}Criar{% endif %}
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>
