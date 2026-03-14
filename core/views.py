@@ -38,21 +38,19 @@ def search_view(request):
 
     if request.method == "POST":
         service_id = request.POST.get("service_id")
+        barber_id = request.POST.get("barber")
+        date = request.POST.get("date")
+        time = request.POST.get("time")
+        payment_method = request.POST.get("payment_method")
 
-        appointment = Appointment.objects.filter(
+        appointment = Appointment.objects.create(
             customer=request.user.customer,
+            barber=Barber.objects.get(id=barber_id),
+            date=date,
+            time=time,
+            payment_method=payment_method,
             status="scheduled"
-        ).first()
-
-        if not appointment:
-            appointment = Appointment.objects.create(
-                customer=request.user.customer,
-                barber=Barber.objects.first(),
-                date="2000-01-01",
-                time="00:00",
-                status="scheduled"
-            )
-
+        )
         appointment.services.add(service_id)
         return redirect("appointments")
 
