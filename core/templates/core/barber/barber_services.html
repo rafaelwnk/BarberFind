@@ -1,0 +1,44 @@
+{% extends 'core/frame.html' %}
+
+{% block frame_content %}
+
+<div class="container">
+    <h1 class="mb-4 text-center">Seus Serviços</h1>
+    <div class="d-flex align-items-center justify-content-end mb-4">
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+            <i class="bi bi-plus"></i>
+        </button>
+    </div>
+
+    <div class="row g-3">
+        {% for service in all_services %}
+            {% if service.id in barber_service_ids %}
+            <div class="col-12 shadow-sm col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title">{{ service.title }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text text-muted mb-1">
+                            <i class="bi bi-cash"></i> R$ {{ service.price }}
+                        </p>
+                        <p class="card-text text-muted">
+                            <i class="bi bi-clock"></i> {{ service.duration }} min
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        {% if not barber_service_ids %}
+        <div class="col-12">
+            <p class="text-muted text-center">Nenhum serviço selecionado.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include 'core/barber/add_service_modal.html' %}
+
+{% endblock %}

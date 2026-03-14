@@ -1,0 +1,66 @@
+<div class="modal fade" id="scheduleModal{{ service.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agendar — {{ service.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'search' %}">
+                {% csrf_token %}
+                <input type="hidden" name="service_id" value="{{ service.id }}">
+                <div class="modal-body d-flex flex-column gap-3">
+
+                    <div>
+                        <label class="form-label">Barbeiro</label>
+                        <select name="barber" class="form-select" required>
+                            <option value="">Selecione um barbeiro...</option>
+                            {% for barber in service.barber_set.all %}
+                            <option value="{{ barber.id }}">{{ barber.user.username }}</option>
+                            {% empty %}
+                            <option disabled>Nenhum barbeiro disponível</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Data</label>
+                        <input type="date" name="date" class="form-control" required>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Horário</label>
+                        <input type="time" name="time" class="form-control" required>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Pagamento</label>
+                        <div class="d-flex gap-2">
+                            <input type="radio" class="btn-check" name="payment_method" id="cash{{ service.id }}"
+                                value="cash" checked>
+                            <label class="btn btn-outline-secondary w-100" for="cash{{ service.id }}">
+                                <i class="bi bi-cash me-1"></i> Dinheiro
+                            </label>
+
+                            <input type="radio" class="btn-check" name="payment_method" id="pix{{ service.id }}"
+                                value="pix">
+                            <label class="btn btn-outline-secondary w-100" for="pix{{ service.id }}">
+                                <i class="bi bi-qr-code me-1"></i> Pix
+                            </label>
+
+                            <input type="radio" class="btn-check" name="payment_method" id="card{{ service.id }}"
+                                value="card">
+                            <label class="btn btn-outline-secondary w-100" for="card{{ service.id }}">
+                                <i class="bi bi-credit-card me-1"></i> Cartão
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

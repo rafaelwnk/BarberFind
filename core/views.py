@@ -9,6 +9,9 @@ from core.forms import AccountForm, BarberForm, ServiceForm, AppointmentForm
 def is_admin(user):
     return user.is_staff
 
+def is_barber(user):
+    return hasattr(user, "barber")
+
 def index_view(request):
     if not request.user.is_authenticated:
         return redirect("/login")
@@ -31,13 +34,27 @@ def home_view(request):
 @login_required
 def search_view(request):
     query = request.GET.get("q")
+    services = Service.objects.filter(title__icontains=query) if query else Service.objects.all()
 
-    services = []
+    if request.method == "POST":
+        service_id = request.POST.get("service_id")
 
-    if query:
-        services = Service.objects.filter(title__icontains=query)
-    else:
-        services = Service.objects.all()
+        appointment = Appointment.objects.filter(
+            customer=request.user.customer,
+            status="scheduled"
+        ).first()
+
+        if not appointment:
+            appointment = Appointment.objects.create(
+                customer=request.user.customer,
+                barber=Barber.objects.first(),
+                date="2000-01-01",
+                time="00:00",
+                status="scheduled"
+            )
+
+        appointment.services.add(service_id)
+        return redirect("appointments")
 
     return render(request, "core/search.html", {
         "services": services,
@@ -47,31 +64,32 @@ def search_view(request):
 @login_required
 def appointments_view(request):
     user = request.user
+    barbers = Barber.objects.all()
 
     if user.is_staff:
         appointments = Appointment.objects.all()
-
-        return render(request, "core/appointments.html", {
-            "appointments": appointments
-        })
-    
     elif hasattr(user, "barber"):
-        appointments = Appointment.objects.filter(
-            barber=request.user.barber
-        )
-
-        return render(request, "core/appointments.html", {
-            "appointments": appointments
-        })
-
+        appointments = Appointment.objects.filter(barber=request.user.barber)
     elif hasattr(user, "customer"):
-        appointments = Appointment.objects.filter(
-            customer=request.user.customer
-        )
+        appointments = Appointment.objects.filter(customer=request.user.customer)
 
-        return render(request, "core/appointments.html", {
-            "appointments": appointments
-        })
+    return render(request, "core/appointments.html", {
+        "appointments": appointments,
+        "barbers": barbers
+    })
+    
+@login_required
+def confirm_appointment_view(request):
+    if request.method == "POST":
+        appointment_id = request.POST.get("appointment_id")
+        appointment = Appointment.objects.get(id=appointment_id, customer=request.user.customer)
+        appointment.barber = Barber.objects.get(id=request.POST.get("barber"))
+        appointment.date = request.POST.get("date")
+        appointment.time = request.POST.get("time")
+        appointment.payment_method = request.POST.get("payment_method")
+        appointment.status = "scheduled"
+        appointment.save()
+    return redirect("appointments")
 
 @login_required
 def account_view(request):
@@ -103,6 +121,7 @@ def barbers_view(request):
     query = request.GET.get("q")
     edit_id = request.GET.get("edit")
     delete_id = request.GET.get("delete")
+    services_id = request.GET.get("services")
 
     barbers = Barber.objects.filter(user__username__icontains=query) if query else Barber.objects.all()
 
@@ -119,11 +138,16 @@ def barbers_view(request):
         barber = Barber.objects.get(id=delete_id)
         delete_data = {"id": barber.id, "name": barber.user.username}
 
+    barber_services = None
+    if services_id:
+        barber_services = Barber.objects.get(id=services_id)
+
     return render(request, "core/admin/barbers.html", {
         "barbers": barbers,
         "form": form,
         "user_data": user_data,
-        "delete_data": delete_data
+        "delete_data": delete_data,
+        "barber_services": barber_services
     })
 
 @login_required
@@ -267,3 +291,19 @@ def delete_service_view(request):
         Service.objects.get(id=service_id).delete()
 
     return redirect("services")
+
+@login_required
+@user_passes_test(is_barber)
+def barber_services_view(request):
+    barber = request.user.barber
+    all_services = Service.objects.all()
+
+    if request.method == "POST":
+        selected_ids = request.POST.getlist("services")
+        barber.services.set(selected_ids)
+        return redirect("barber_services")
+
+    return render(request, "core/barber/barber_services.html", {
+        "all_services": all_services,
+        "barber_service_ids": list(barber.services.values_list("id", flat=True))
+    })

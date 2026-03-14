@@ -1,0 +1,33 @@
+{% if barber_services %}
+<div class="modal fade show d-block" id="barberServicesModal" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Serviços de {{ barber_services.user.username }}</h5>
+                <a href="{% url 'barbers' %}" class="btn-close"></a>
+            </div>
+            <div class="modal-body">
+                {% with services=barber_services.services.all %}
+                {% if services %}
+                <div class="d-flex flex-column gap-2">
+                    {% for service in services %}
+                    <div class="d-flex align-items-center justify-content-between p-2 border rounded">
+                        <strong>{{ service.title }}</strong>
+                        <span class="text-muted" style="font-size: 13px;">
+                            R$ {{ service.price }} · {{ service.duration }} min
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center">Nenhum serviço vinculado.</p>
+                {% endif %}
+                {% endwith %}
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'barbers' %}" class="btn btn-secondary">Fechar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

@@ -27,11 +27,16 @@
         <div class="col-12 col-md-6 col-lg-4 mb-4">
 
             <div class="card shadow-sm h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title">
-                        {{ barber.user.username }}
-                    </h5>
-                    <div>
+                <div class="card-header d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center flex-shrink-0 fw-medium"
+                        style="width:40px; height:40px; font-size:14px;">
+                        {{ barber.user.username|slice:":2"|upper }}
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <p class="mb-0 fw-medium text-truncate">{{ barber.user.username }}</p>
+                        <p class="mb-0 text-muted text-truncate" style="font-size:12px;">{{ barber.user.email }}</p>
+                    </div>
+                    <div class="d-flex gap-1 flex-shrink-0">
                         <a href="{% url 'barbers' %}?edit={{ barber.id }}" class="btn btn-sm btn-outline-secondary">
                             <i class="bi bi-pencil"></i>
                         </a>
@@ -40,9 +45,13 @@
                         </a>
                     </div>
                 </div>
-                <div class="card-body">
-                    <p>{{ barber.user.email }}</p>
-                    <p><a href="">Serviços</a></p>
+                <div class="card-footer border-0">
+                    <a href="{% url 'barbers' %}?services={{ barber.id }}"
+                        class="d-inline-flex align-items-center gap-2 text-decoration-none text-danger border border-danger rounded px-2 py-1"
+                        style="font-size: 13px;">
+                        <i class="bi bi-grid" style="font-size: 12px;"></i>
+                        Serviços
+                    </a>
                 </div>
             </div>
 
@@ -59,5 +68,6 @@
 
 {% include 'core/admin/barber_modal.html' %}
 {% include 'core/delete_modal.html' with cancel_url=request.path delete_url='/barbers/delete/' delete_id_field='barber_id' %}
+{% include 'core/admin/barber_services_modal.html' %}
 
 {% endblock %}

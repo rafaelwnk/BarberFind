@@ -54,18 +54,16 @@ class BarberForm(forms.Form):
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ["title", "price", "duration", "barbers"]
+        fields = ["title", "price", "duration"]
         widgets = {
             "title": forms.TextInput(attrs=FORM_CONTROL),
             "price": forms.NumberInput(attrs={**FORM_CONTROL, "step": "0.01"}),
             "duration": forms.NumberInput(attrs=FORM_CONTROL),
-            "barbers": forms.SelectMultiple(attrs=FORM_SELECT),
         }
         labels = {
             "title": "Título",
             "price": "Preço",
             "duration": "Duração (minutos)",
-            "barbers": "Barbeiros",
         }
 
 
