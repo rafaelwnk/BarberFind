@@ -5,6 +5,7 @@ from core.models import Appointment, Barber, Service
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import update_session_auth_hash
 from core.forms import AccountForm, BarberForm, ServiceForm
+from core.emails import send_appointment_created, send_appointment_cancelled
 
 def is_admin(user):
     return user.is_staff
@@ -33,7 +34,7 @@ def index_view(request):
 @login_required
 def home_view(request):
     return index_view(request)
-    
+
 @login_required
 def search_view(request):
     query = request.GET.get("q")
@@ -55,6 +56,7 @@ def search_view(request):
             status="scheduled"
         )
         appointment.services.add(service_id)
+        send_appointment_created(appointment)
         return redirect("appointments")
 
     return render(request, "core/search.html", {
@@ -78,7 +80,7 @@ def appointments_view(request):
         "appointments": appointments,
         "barbers": barbers
     })
-    
+
 @login_required
 def confirm_appointment_view(request):
     if request.method == "POST":
@@ -90,6 +92,16 @@ def confirm_appointment_view(request):
         appointment.payment_method = request.POST.get("payment_method")
         appointment.status = "scheduled"
         appointment.save()
+    return redirect("appointments")
+
+@login_required
+def cancel_appointment_view(request):
+    if request.method == "POST":
+        appointment_id = request.POST.get("appointment_id")
+        appointment = Appointment.objects.get(id=appointment_id)
+        appointment.status = "cancelled"
+        appointment.save()
+        send_appointment_cancelled(appointment)
     return redirect("appointments")
 
 @login_required
@@ -245,7 +257,6 @@ def services_view(request):
         "delete_data": delete_data
     })
 
-
 @login_required
 @user_passes_test(is_admin)
 def create_service_view(request):
@@ -264,7 +275,6 @@ def create_service_view(request):
         })
 
     return redirect("services")
-
 
 @login_required
 @user_passes_test(is_admin)
@@ -287,7 +297,6 @@ def edit_service_view(request):
         })
 
     return redirect("services")
-
 
 @login_required
 @user_passes_test(is_admin)
