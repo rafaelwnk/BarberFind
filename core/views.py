@@ -4,13 +4,16 @@ from django.contrib.auth.models import User
 from core.models import Appointment, Barber, Service
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import update_session_auth_hash
-from core.forms import AccountForm, BarberForm, ServiceForm, AppointmentForm
+from core.forms import AccountForm, BarberForm, ServiceForm
 
 def is_admin(user):
     return user.is_staff
 
 def is_barber(user):
     return hasattr(user, "barber")
+
+def is_admin_or_barber(user):
+    return is_admin(user) or is_barber(user)
 
 def index_view(request):
     if not request.user.is_authenticated:
@@ -111,7 +114,12 @@ def account_view(request):
 @login_required
 @user_passes_test(is_admin)
 def dashboard_view(request):
-    return render(request, 'core/admin/dashboard.html')
+    return render(request, 'core/admin/dashboard.html', {
+        "total_barbers": Barber.objects.count(),
+        "total_services": Service.objects.count(),
+        "total_appointments": Appointment.objects.count(),
+        "recent_appointments": Appointment.objects.order_by("-created_at")[:5]
+    })
 
 @login_required
 @user_passes_test(is_admin)
@@ -304,4 +312,48 @@ def barber_services_view(request):
     return render(request, "core/barber/barber_services.html", {
         "all_services": all_services,
         "barber_service_ids": list(barber.services.values_list("id", flat=True))
+    })
+
+@login_required
+@user_passes_test(is_admin_or_barber)
+def reports_view(request):
+    user = request.user
+
+    appointments = Appointment.objects.all()
+
+    if hasattr(user, "barber"):
+        appointments = appointments.filter(barber=user.barber)
+
+    status = request.GET.get("status")
+    barber_id = request.GET.get("barber")
+    date_from = request.GET.get("date_from")
+    date_to = request.GET.get("date_to")
+
+    if status:
+        appointments = appointments.filter(status=status)
+    if barber_id and user.is_staff:
+        appointments = appointments.filter(barber__id=barber_id)
+    if date_from:
+        appointments = appointments.filter(date__gte=date_from)
+    if date_to:
+        appointments = appointments.filter(date__lte=date_to)
+
+    total = appointments.count()
+    total_scheduled = appointments.filter(status="scheduled").count()
+    total_completed = appointments.filter(status="completed").count()
+    total_cancelled = appointments.filter(status="cancelled").count()
+
+    return render(request, "core/reports.html", {
+        "appointments": appointments.order_by("-date"),
+        "barbers": Barber.objects.all(),
+        "total": total,
+        "total_scheduled": total_scheduled,
+        "total_completed": total_completed,
+        "total_cancelled": total_cancelled,
+        "filters": {
+            "status": status,
+            "barber": int(barber_id) if barber_id else None,
+            "date_from": date_from,
+            "date_to": date_to,
+        }
     })
