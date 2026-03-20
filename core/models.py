@@ -35,10 +35,11 @@ class Barber(models.Model):
 class Appointment(models.Model):
 
     STATUS_CHOICES = [
+        ("pending", "Pendente"),
         ("scheduled", "Agendado"),
         ("completed", "Concluído"),
         ("cancelled", "Cancelado"),
-    ] 
+    ]
 
     PAYMENT_CHOICES = [
         ("cash", "Dinheiro"),

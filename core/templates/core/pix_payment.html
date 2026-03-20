@@ -1,0 +1,29 @@
+{% extends 'core/frame.html' %}
+
+{% block frame_content %}
+<div class="d-flex flex-column align-items-center justify-content-center gap-4">
+    <h1>Pagamento via Pix</h1>
+
+    <div class="card shadow-sm p-4 text-center" style="max-width: 400px;">
+        <p class="text-muted">Escaneie o QR Code ou copie a chave Pix abaixo</p>
+
+        <img src="{{ qr_url }}" alt="QR Code Pix" class="mx-auto mb-3">
+
+        <p class="fw-bold">Total: R$ {{ total }}</p>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" value="{{ pix_key }}" readonly>
+            <button class="btn btn-outline-danger" onclick="navigator.clipboard.writeText('{{ pix_key }}')">
+                <i class="bi bi-clipboard"></i>
+            </button>
+        </div>
+
+        <p class="text-muted small">Após realizar o pagamento clique em confirmar</p>
+
+        <form method="POST" action="{% url 'payment_pix_confirm' appointment.id %}">
+            {% csrf_token %}
+            <button class="btn btn-danger w-100">Confirmar pagamento</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

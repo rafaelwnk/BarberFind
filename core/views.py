@@ -6,6 +6,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import update_session_auth_hash
 from core.forms import AccountForm, BarberForm, ServiceForm
 from core.emails import send_appointment_created, send_appointment_cancelled
+from django.conf import settings
+from urllib.parse import quote
+import mercadopago
 
 def is_admin(user):
     return user.is_staff
@@ -53,11 +56,21 @@ def search_view(request):
             date=date,
             time=time,
             payment_method=payment_method,
-            status="scheduled"
+            status="pending"
         )
         appointment.services.add(service_id)
-        send_appointment_created(appointment)
-        return redirect("appointments")
+
+        if payment_method == "cash":
+            appointment.status = "scheduled"
+            appointment.save()
+            send_appointment_created(appointment)
+            return redirect("appointments")
+
+        elif payment_method == "pix":
+            return redirect("payment_pix", appointment_id=appointment.id)
+
+        elif payment_method == "card":
+            return redirect("payment", appointment_id=appointment.id)
 
     return render(request, "core/search.html", {
         "services": services,
@@ -366,3 +379,112 @@ def reports_view(request):
             "date_to": date_to,
         }
     })
+
+@login_required
+def payment_pix_view(request, appointment_id):
+    appointment = Appointment.objects.get(id=appointment_id, customer=request.user.customer)
+
+    total = sum(s.price for s in appointment.services.all())
+    amount = f"{float(total):.2f}"
+
+    pix_key = settings.PIX_KEY
+    receiver_name = settings.PIX_RECEIVER_NAME
+    city = settings.PIX_CITY
+
+    def pix_field(id, value):
+        return f"{id:02d}{len(value):02d}{value}"
+
+    merchant_account = pix_field(0, "BR.GOV.BCB.PIX") + pix_field(1, pix_key)
+    merchant_account_info = pix_field(26, merchant_account)
+
+    payload = (
+        pix_field(0, "01") +
+        pix_field(1, "12") +
+        merchant_account_info +
+        pix_field(52, "0000") +
+        pix_field(53, "986") +
+        pix_field(54, amount) +
+        pix_field(58, "BR") +
+        pix_field(59, receiver_name[:25]) +
+        pix_field(60, city[:15]) +
+        pix_field(62, pix_field(5, "***"))
+    )
+
+    def crc16(data):
+        crc = 0xFFFF
+        for char in data:
+            crc ^= ord(char) << 8
+            for _ in range(8):
+                if crc & 0x8000:
+                    crc = (crc << 1) ^ 0x1021
+                else:
+                    crc <<= 1
+                crc &= 0xFFFF
+        return crc
+
+    payload_with_crc = payload + "6304"
+    crc = crc16(payload_with_crc)
+    pix_payload = payload_with_crc + f"{crc:04X}"
+
+    qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={quote(pix_payload)}"
+
+    return render(request, "core/pix_payment.html", {
+        "appointment": appointment,
+        "qr_url": qr_url,
+        "pix_key": pix_key,
+        "total": amount,
+    })
+
+
+@login_required
+def payment_pix_confirm_view(request, appointment_id):
+    if request.method == "POST":
+        appointment = Appointment.objects.get(id=appointment_id, customer=request.user.customer)
+        appointment.status = "scheduled"
+        appointment.save()
+        send_appointment_created(appointment)
+        return redirect("appointments")
+    return redirect("search")
+
+@login_required
+def payment_view(request, appointment_id):
+    appointment = Appointment.objects.get(id=appointment_id, customer=request.user.customer)
+
+    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+
+    total = sum(s.price for s in appointment.services.all())
+
+    preference_data = {
+        "items": [
+            {
+                "title": f"Agendamento - {appointment.barber}",
+                "quantity": 1,
+                "unit_price": float(total),
+            }
+        ],
+        "back_urls": {
+            "success": request.build_absolute_uri(f"/payment/success/{appointment.id}/"),
+            "failure": request.build_absolute_uri(f"/payment/failure/{appointment.id}/"),
+            "pending": request.build_absolute_uri(f"/payment/failure/{appointment.id}/"),
+        },
+    }
+
+    preference_response = sdk.preference().create(preference_data)
+    preference = preference_response["response"]
+
+    return redirect(preference["init_point"])
+
+@login_required
+def payment_success_view(request, appointment_id):
+    appointment = Appointment.objects.get(id=appointment_id)
+    appointment.status = "scheduled"
+    appointment.save()
+    send_appointment_created(appointment)
+    return redirect("appointments")
+
+
+@login_required
+def payment_failure_view(request, appointment_id):
+    appointment = Appointment.objects.get(id=appointment_id)
+    appointment.delete()
+    return redirect("search")
