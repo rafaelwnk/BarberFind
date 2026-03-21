@@ -1,4 +1,4 @@
-{% extends 'core/frame.html' %}
+{% extends 'core/sidebar.html' %}
 
 {% block frame_content %}
 <div class="container">
@@ -120,6 +120,41 @@
                 </tbody>
             </table>
         </div>
+
+        {% if appointments.has_other_pages %}
+        <div class="card-footer d-flex justify-content-center">
+            <nav>
+                <ul class="pagination mb-0">
+
+                    {% if appointments.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ appointments.previous_page_number }}&status={{ filters.status|default:'' }}&barber={{ filters.barber|default:'' }}&date_from={{ filters.date_from|default:'' }}&date_to={{ filters.date_to|default:'' }}">
+                            &laquo;
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in appointments.paginator.page_range %}
+                    <li class="page-item {% if appointments.number == num %}active{% endif %}">
+                        <a class="page-link {% if appointments.number == num %}bg-danger border-danger{% endif %}" href="?page={{ num }}&status={{ filters.status|default:'' }}&barber={{ filters.barber|default:'' }}&date_from={{ filters.date_from|default:'' }}&date_to={{ filters.date_to|default:'' }}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if appointments.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ appointments.next_page_number }}&status={{ filters.status|default:'' }}&barber={{ filters.barber|default:'' }}&date_from={{ filters.date_from|default:'' }}&date_to={{ filters.date_to|default:'' }}">
+                            &raquo;
+                        </a>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
     </div>
 
 </div>

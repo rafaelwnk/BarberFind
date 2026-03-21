@@ -1,11 +1,10 @@
-{% extends 'core/frame.html' %}
+{% extends 'core/sidebar.html' %}
 
 {% block frame_content %}
 <div class="container">
     <h1 class="mb-4 text-center">Dashboard</h1>
 
     <div class="row justify-content-center mb-4">
-
         <div class="col-12 col-md-4 mb-3">
             <div class="card shadow-sm text-center p-4">
                 <i class="bi bi-scissors fs-1 text-danger"></i>
@@ -13,7 +12,6 @@
                 <p class="text-muted mb-0">Barbeiros</p>
             </div>
         </div>
-
         <div class="col-12 col-md-4 mb-3">
             <div class="card shadow-sm text-center p-4">
                 <i class="bi bi-journal-text fs-1 text-danger"></i>
@@ -21,7 +19,6 @@
                 <p class="text-muted mb-0">Serviços</p>
             </div>
         </div>
-
         <div class="col-12 col-md-4 mb-3">
             <div class="card shadow-sm text-center p-4">
                 <i class="bi bi-calendar-check fs-1 text-danger"></i>
@@ -29,11 +26,34 @@
                 <p class="text-muted mb-0">Agendamentos</p>
             </div>
         </div>
+    </div>
 
+    <div class="row mb-4">
+        <div class="col-12 mb-3">
+            <div class="card shadow-sm p-4">
+                <h6 class="mb-3">Agendamentos por mês</h6>
+                <canvas id="lineChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12 col-lg-6 mb-3">
+            <div class="card shadow-sm p-4">
+                <h6 class="mb-3">Top barbeiros</h6>
+                <canvas id="barChart" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6 mb-3">
+            <div class="card shadow-sm p-4">
+                <h6 class="mb-3">Status dos agendamentos</h6>
+                <canvas id="donutChart" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-8">
+        <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h5 class="mb-0">Agendamentos Recentes</h5>
@@ -55,7 +75,7 @@
                                 <td>{{ appointment.barber }}</td>
                                 <td>{{ appointment.date }}</td>
                                 <td>
-                                    <span class="badge 
+                                    <span class="badge
                                         {% if appointment.status == 'scheduled' %}bg-warning
                                         {% elif appointment.status == 'completed' %}bg-success
                                         {% else %}bg-danger{% endif %}">
@@ -76,4 +96,63 @@
     </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const monthLabels = {{ month_labels|safe }};
+    const monthValues = {{ month_values|safe }};
+    const statusLabels = {{ status_labels|safe }};
+    const statusValues = {{ status_values|safe }};
+    const barberLabels = {{ barber_labels|safe }};
+    const barberValues = {{ barber_values|safe }};
+
+    new Chart(document.getElementById('lineChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: monthLabels,
+            datasets: [{
+                label: 'Agendamentos',
+                data: monthValues,
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220,53,69,0.1)',
+                tension: 0.4,
+                fill: true,
+            }]
+        },
+        options: { plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('donutChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusValues,
+                backgroundColor: ['#ffc107', '#198754', '#dc3545', '#6c757d'],
+            }]
+        },
+        options: {
+            plugins: { legend: { position: 'bottom' } },
+            maintainAspectRatio: false,
+        }
+    });
+
+    new Chart(document.getElementById('barChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: barberLabels,
+            datasets: [{
+                label: 'Agendamentos',
+                data: barberValues,
+                backgroundColor: '#dc3545',
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            maintainAspectRatio: false,
+        }
+    });
+</script>
+
 {% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'core/frame.html' %}
+{% extends 'core/sidebar.html' %}
 
 {% block frame_content %}
 
@@ -11,32 +11,59 @@
     </div>
 
     <div class="row g-3">
-        {% for service in all_services %}
-            {% if service.id in barber_service_ids %}
-            <div class="col-12 shadow-sm col-md-6 col-lg-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h5 class="card-title">{{ service.title }}</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text text-muted mb-1">
-                            <i class="bi bi-cash"></i> R$ {{ service.price }}
-                        </p>
-                        <p class="card-text text-muted">
-                            <i class="bi bi-clock"></i> {{ service.duration }} min
-                        </p>
-                    </div>
+        {% for service in barber_services %}
+        <div class="col-12 shadow-sm col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">{{ service.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-muted mb-1">
+                        <i class="bi bi-cash"></i> R$ {{ service.price }}
+                    </p>
+                    <p class="card-text text-muted">
+                        <i class="bi bi-clock"></i> {{ service.duration }} min
+                    </p>
                 </div>
             </div>
-            {% endif %}
-        {% endfor %}
-
-        {% if not barber_service_ids %}
+        </div>
+        {% empty %}
         <div class="col-12">
             <p class="text-muted text-center">Nenhum serviço selecionado.</p>
         </div>
-        {% endif %}
+        {% endfor %}
     </div>
+
+    {% if barber_services.has_other_pages %}
+    <div class="d-flex justify-content-center mt-2">
+        <nav>
+            <ul class="pagination mb-0">
+
+                {% if barber_services.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ barber_services.previous_page_number }}">&laquo;</a>
+                </li>
+                {% endif %}
+
+                {% for num in barber_services.paginator.page_range %}
+                <li class="page-item {% if barber_services.number == num %}active{% endif %}">
+                    <a class="page-link {% if barber_services.number == num %}bg-danger border-danger{% endif %}" href="?page={{ num }}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endfor %}
+
+                {% if barber_services.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ barber_services.next_page_number }}">&raquo;</a>
+                </li>
+                {% endif %}
+
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
 </div>
 
 {% include 'core/barber/add_service_modal.html' %}

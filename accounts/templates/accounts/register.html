@@ -15,13 +15,7 @@
                     <i class="bi bi-person"></i>
                 </span>
                 <div class="form-floating">
-                    <input 
-                        type="text" 
-                        name="username"
-                        class="form-control" 
-                        placeholder="Nome"
-                        required
-                    >
+                    <input type="text" name="username" class="form-control" placeholder="Nome" required>
                     <label>Nome</label>
                 </div>
             </div>
@@ -31,13 +25,7 @@
                     <i class="bi bi-envelope"></i>
                 </span>
                 <div class="form-floating">
-                    <input 
-                        type="email" 
-                        name="email"
-                        class="form-control" 
-                        placeholder="Email"
-                        required
-                    >
+                    <input type="email" name="email" class="form-control" placeholder="Email" required>
                     <label>Email</label>
                 </div>
             </div>
@@ -47,13 +35,7 @@
                     <i class="bi bi-lock"></i>
                 </span>
                 <div class="form-floating">
-                    <input 
-                        type="password"
-                        name="password"
-                        class="form-control" 
-                        placeholder="Senha"
-                        required
-                    >
+                    <input type="password" name="password" class="form-control" placeholder="Senha" required>
                     <label>Senha</label>
                 </div>
             </div>
@@ -63,13 +45,8 @@
                     <i class="bi bi-lock"></i>
                 </span>
                 <div class="form-floating">
-                    <input 
-                        type="password"
-                        name="confirm_password"
-                        class="form-control" 
-                        placeholder="Confirmar senha"
-                        required
-                    >
+                    <input type="password" name="confirm_password" class="form-control" placeholder="Confirmar senha"
+                        required>
                     <label>Confirme a senha</label>
                 </div>
             </div>
@@ -80,8 +57,8 @@
 
         </form>
 
-        <a href="{% url 'login' %}" class="text-center mt-3">
-            Já tem conta? Entrar
+        <a href="{% url 'login' %}" class="text-center mt-3 text-muted text-decoration-none d-block">
+            Já tem conta? <span class="text-danger fw-medium">Entrar</span>
         </a>
 
     </div>

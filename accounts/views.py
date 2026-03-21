@@ -3,8 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from accounts.forms import LoginForm, RegisterForm
 from core.models import Customer
-
-# Create your views here.
+from django.contrib import messages
 
 def login_view(request):
     form = LoginForm()
@@ -13,21 +12,19 @@ def login_view(request):
         form = LoginForm(request.POST)
 
         if form.is_valid():
-
             username = form.cleaned_data["username"]
             password = form.cleaned_data["password"]
 
-            user = authenticate(
-                request,
-                username=username,
-                password=password
-            )
+            user = authenticate(request, username=username, password=password)
 
             if user is not None:
                 login(request, user)
                 return redirect("home")
+            else:
+                messages.error(request, "Usuário ou senha incorretos.")
 
     return render(request, "accounts/login.html", {"form": form})
+
 
 def register_view(request):
     form = RegisterForm()
@@ -36,7 +33,6 @@ def register_view(request):
         form = RegisterForm(request.POST)
 
         if form.is_valid():
-
             username = form.cleaned_data["username"]
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
@@ -48,9 +44,8 @@ def register_view(request):
             )
 
             Customer.objects.create(user=user)
-
             login(request, user)
-
+            messages.success(request, "Conta criada com sucesso!")
             return redirect("home")
 
     return render(request, "accounts/register.html", {"form": form})

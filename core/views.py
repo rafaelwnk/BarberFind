@@ -1,4 +1,4 @@
-from decimal import Decimal
+from django.utils import timezone
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
 from core.models import Appointment, Barber, Service
@@ -8,6 +8,10 @@ from core.forms import AccountForm, BarberForm, ServiceForm
 from core.emails import send_appointment_created, send_appointment_cancelled
 from django.conf import settings
 from urllib.parse import quote
+from django.core.paginator import Paginator
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
+import json
 import mercadopago
 
 def is_admin(user):
@@ -28,20 +32,62 @@ def index_view(request):
     if user.is_staff:
         return redirect("/dashboard")
     elif hasattr(user, "barber"):
-        return render(request, "core/home_barber.html")
+        return redirect("home_barber")
     elif hasattr(user, "customer"):
-        return render(request, "core/home.html")
+        return redirect("home")
     else:
         return redirect("/login")
 
 @login_required
 def home_view(request):
-    return index_view(request)
+    user = request.user
+
+    if not hasattr(user, "customer"):
+        return index_view(request)
+
+    next_appointment = Appointment.objects.filter(
+        customer=user.customer,
+        status="scheduled",
+        date__gte=timezone.now().date()
+    ).order_by("date", "time").first()
+
+    total_appointments = Appointment.objects.filter(
+        customer=user.customer,
+        status="completed"
+    ).count()
+
+    return render(request, "core/home.html", {
+        "next_appointment": next_appointment,
+        "total_appointments": total_appointments,
+    })
+
+@login_required
+@user_passes_test(is_barber)
+def home_barber_view(request):
+    barber = request.user.barber
+    today = timezone.now().date()
+
+    next_appointment = Appointment.objects.filter(
+        barber=barber,
+        status="scheduled",
+        date=today
+    ).order_by("time").first()
+
+    total_today = Appointment.objects.filter(
+        barber=barber,
+        status="scheduled",
+        date=today
+    ).count()
+
+    return render(request, "core/barber/home.html", {
+        "next_appointment": next_appointment,
+        "total_today": total_today,
+    })
 
 @login_required
 def search_view(request):
     query = request.GET.get("q")
-    services = Service.objects.filter(title__icontains=query) if query else Service.objects.all()
+    services_qs = Service.objects.filter(title__icontains=query) if query else Service.objects.all()
 
     if request.method == "POST":
         service_id = request.POST.get("service_id")
@@ -65,12 +111,14 @@ def search_view(request):
             appointment.save()
             send_appointment_created(appointment)
             return redirect("appointments")
-
         elif payment_method == "pix":
             return redirect("payment_pix", appointment_id=appointment.id)
-
         elif payment_method == "card":
             return redirect("payment", appointment_id=appointment.id)
+
+    paginator = Paginator(services_qs, 9)
+    page = request.GET.get("page")
+    services = paginator.get_page(page)
 
     return render(request, "core/search.html", {
         "services": services,
@@ -89,8 +137,12 @@ def appointments_view(request):
     elif hasattr(user, "customer"):
         appointments = Appointment.objects.filter(customer=request.user.customer)
 
+    paginator = Paginator(appointments.order_by("-date"), 9)
+    page = request.GET.get("page")
+    appointments_page = paginator.get_page(page)
+
     return render(request, "core/appointments.html", {
-        "appointments": appointments,
+        "appointments": appointments_page,
         "barbers": barbers
     })
 
@@ -139,11 +191,47 @@ def account_view(request):
 @login_required
 @user_passes_test(is_admin)
 def dashboard_view(request):
+    STATUS_MAP = {
+        "scheduled": "Agendado",
+        "completed": "Concluído",
+        "cancelled": "Cancelado",
+        "pending": "Pendente",
+    }
+
+    status_data = Appointment.objects.values("status").annotate(total=Count("id"))
+    status_labels = [STATUS_MAP.get(d["status"], d["status"]) for d in status_data]
+    status_values = [d["total"] for d in status_data]
+
+    barber_data = (
+        Appointment.objects
+        .values("barber__user__username")
+        .annotate(total=Count("id"))
+        .order_by("-total")[:5]
+    )
+    barber_labels = [d["barber__user__username"] for d in barber_data]
+    barber_values = [d["total"] for d in barber_data]
+
+    month_data = (
+        Appointment.objects
+        .annotate(month=TruncMonth("date"))
+        .values("month")
+        .annotate(total=Count("id"))
+        .order_by("month")
+    )
+    month_labels = [d["month"].strftime("%b/%Y") for d in month_data]
+    month_values = [d["total"] for d in month_data]
+
     return render(request, 'core/admin/dashboard.html', {
         "total_barbers": Barber.objects.count(),
         "total_services": Service.objects.count(),
         "total_appointments": Appointment.objects.count(),
-        "recent_appointments": Appointment.objects.order_by("-created_at")[:5]
+        "recent_appointments": Appointment.objects.order_by("-created_at")[:5],
+        "status_labels": json.dumps(status_labels),
+        "status_values": json.dumps(status_values),
+        "barber_labels": json.dumps(barber_labels),
+        "barber_values": json.dumps(barber_values),
+        "month_labels": json.dumps(month_labels),
+        "month_values": json.dumps(month_values),
     })
 
 @login_required
@@ -154,7 +242,11 @@ def barbers_view(request):
     delete_id = request.GET.get("delete")
     services_id = request.GET.get("services")
 
-    barbers = Barber.objects.filter(user__username__icontains=query) if query else Barber.objects.all()
+    barbers_qs = Barber.objects.filter(user__username__icontains=query) if query else Barber.objects.all()
+
+    paginator = Paginator(barbers_qs, 9)
+    page = request.GET.get("page")
+    barbers = paginator.get_page(page)
 
     user_data = None
     form = BarberForm()
@@ -248,7 +340,11 @@ def services_view(request):
     edit_id = request.GET.get("edit")
     delete_id = request.GET.get("delete")
 
-    services = Service.objects.filter(title__icontains=query) if query else Service.objects.all()
+    services_qs = Service.objects.filter(title__icontains=query) if query else Service.objects.all()
+
+    paginator = Paginator(services_qs, 9)
+    page = request.GET.get("page")
+    services = paginator.get_page(page)
 
     service_data = None
     form = ServiceForm()
@@ -331,8 +427,15 @@ def barber_services_view(request):
         barber.services.set(selected_ids)
         return redirect("barber_services")
 
+    barber_services = barber.services.all()
+
+    paginator = Paginator(barber_services, 9)
+    page = request.GET.get("page")
+    barber_services_page = paginator.get_page(page)
+
     return render(request, "core/barber/barber_services.html", {
         "all_services": all_services,
+        "barber_services": barber_services_page,
         "barber_service_ids": list(barber.services.values_list("id", flat=True))
     })
 
@@ -365,8 +468,12 @@ def reports_view(request):
     total_completed = appointments.filter(status="completed").count()
     total_cancelled = appointments.filter(status="cancelled").count()
 
-    return render(request, "core/reports.html", {
-        "appointments": appointments.order_by("-date"),
+    paginator = Paginator(appointments.order_by("-date"), 10)
+    page = request.GET.get("page")
+    appointments_page = paginator.get_page(page)
+
+    return render(request, "core/barber/reports.html", {
+        "appointments": appointments_page,
         "barbers": Barber.objects.all(),
         "total": total,
         "total_scheduled": total_scheduled,

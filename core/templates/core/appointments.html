@@ -1,4 +1,4 @@
-{% extends 'core/frame.html' %}
+{% extends 'core/sidebar.html' %}
 
 {% block frame_content %}
 
@@ -7,7 +7,7 @@
 
     <div class="row justify-content-center">
         {% for appointment in appointments %}
-        <div class="col-12 col-md-6 col-lg-4 mb-4">
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
             <div class="card shadow-sm h-100">
 
                 <div class="card-header d-flex align-items-center justify-content-between">
@@ -61,6 +61,37 @@
         <p class="text-center">Você ainda não possui agendamentos.</p>
         {% endfor %}
     </div>
+
+    {% if appointments.has_other_pages %}
+    <div class="d-flex justify-content-center">
+        <nav>
+            <ul class="pagination mb-0">
+
+                {% if appointments.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ appointments.previous_page_number }}">&laquo;</a>
+                </li>
+                {% endif %}
+
+                {% for num in appointments.paginator.page_range %}
+                <li class="page-item {% if appointments.number == num %}active{% endif %}">
+                    <a class="page-link {% if appointments.number == num %}bg-danger border-danger{% endif %}" href="?page={{ num }}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endfor %}
+
+                {% if appointments.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ appointments.next_page_number }}">&raquo;</a>
+                </li>
+                {% endif %}
+
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
 </div>
 
 {% endblock %}

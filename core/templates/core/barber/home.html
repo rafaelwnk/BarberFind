@@ -12,11 +12,11 @@
                 <i class="bi bi-calendar-check fs-1 text-danger mb-2"></i>
                 <h5>Próximo Agendamento</h5>
                 {% if next_appointment %}
-                <p class="mb-1 text-muted">{{ next_appointment.barber }}</p>
-                <p class="mb-1 text-muted">{{ next_appointment.date }}</p>
-                <p class="mb-0 text-muted">{{ next_appointment.time }}</p>
+                    <p class="mb-1 text-muted">{{ next_appointment.customer }}</p>
+                    <p class="mb-1 text-muted">{{ next_appointment.date }}</p>
+                    <p class="mb-0 text-muted">{{ next_appointment.time }}</p>
                 {% else %}
-                <p class="text-muted">Nenhum agendamento próximo.</p>
+                    <p class="text-muted">Nenhum agendamento hoje.</p>
                 {% endif %}
             </div>
         </div>
@@ -24,16 +24,9 @@
         <div class="col-12 col-md-6">
             <div class="card shadow-sm p-4 text-center h-100">
                 <i class="bi bi-scissors fs-1 text-danger mb-2"></i>
-                <h5>Cortes Realizados</h5>
-                <h2>{{ total_appointments }}</h2>
+                <h5>Agendamentos Hoje</h5>
+                <h2>{{ total_today }}</h2>
             </div>
-        </div>
-
-        <div class="col-12 d-flex justify-content-center">
-            <a href="{% url 'search' %}" class="btn btn-danger px-5">
-                <i class="bi bi-plus-circle me-2"></i>
-                Agendar agora
-            </a>
         </div>
 
     </div>
